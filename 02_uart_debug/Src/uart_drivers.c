@@ -136,24 +136,31 @@ void write_string_uart(const char *str, usart_port port)
 	}
 }
 
-
+// Interrupt handler for USART1
 void USART1_EXTI25_IRQHandler(void)
 {
+	// Check if USART1 RXN interrupt
 	if (((USART1->ISR & ISR_RXNE) !=0) && ((USART1->CR1 & CR1_RXNEIE) !=0))
 	{
 		unsigned char c;
+		// Receive data
 		c = USART1->RDR;
+		// Echo data to bluetooth port
 		write_uart(c, bluetooth_port);
 	}
 
 }
 
+// Interrupt handler for USART2
 void USART2_EXTI26_IRQHandler(void)
 {
+	// Check if USART2 RXN interrupt
 	if (((USART2->ISR & ISR_RXNE) !=0) && ((USART2->CR1 & CR1_RXNEIE) !=0))
 	{
 		unsigned char c;
+		//Receive data
 		c = USART2->RDR;
+		// Echo data to debug port
 		write_uart(c, debug_port);
 	}
 	}
