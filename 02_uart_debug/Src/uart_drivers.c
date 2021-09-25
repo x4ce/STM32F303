@@ -8,14 +8,21 @@
 #define		CR1_UE			(1U<<0)
 #define		CR1_RE			(1U<<2)
 #define		CR1_TE			(1U<<3)
-#define		USART_ISR_RXNE	(1U<<5)
-#define		USART_ISR_TXE	(1U<<7)
+#define		CR1_RXNEIE		(1U<<5)
+#define		CR1_TXEIE		(1U<<7)
+#define		ISR_RXNE		(1U<<5)
+#define		ISR_TXE			(1U<<7)
 #define		SYS_FREQ		8000000
 #define		APB2_CLK		SYS_FREQ
 #define		APB1_CLK		SYS_FREQ
-#define		BAUDRATE		115200
+#define		DB_BAUDRATE		9600
+#define		BT_BAUDRATE		9600
 
 typedef		uint8_t			usart_port;
+
+usart_port	debug_port = 0;
+usart_port	bluetooth_port = 1;
+
 
 static uint16_t compute_uart_bd(uint32_t periph_clk, uint32_t baudrate);
 
@@ -36,11 +43,13 @@ void uart1_debug_init(void)
 	// Turn off USART1
 	USART1->CR1 &= ~(CR1_UE);
 	// Calculate baud rate
-	USART1->BRR = compute_uart_bd(APB2_CLK, BAUDRATE);
+	USART1->BRR = compute_uart_bd(APB2_CLK, DB_BAUDRATE);
 	// Enable TE, RE
 	USART1->CR1 |= (CR1_RE | CR1_TE);
 	// Enable NVIC interrupt
 	NVIC_EnableIRQ(USART1_IRQn);
+	// Enable RX interrupt
+	USART1->CR1 |= CR1_RXNEIE;
 	// Enable UE
 	USART1->CR1 |= CR1_UE;
 }
@@ -61,11 +70,13 @@ void uart2_init(void)
 	// Turn off USART2
 	USART2->CR1 &= ~(CR1_UE);
 	// Calculate baud rate
-	USART2->BRR = compute_uart_bd(APB1_CLK, BAUDRATE);
+	USART2->BRR = compute_uart_bd(APB1_CLK, BT_BAUDRATE);
 	// Enable TE, RE
 	USART2->CR1 |= (CR1_RE | CR1_TE);
 	// Enable NVIC interrupt
 	NVIC_EnableIRQ(USART2_IRQn);
+	// Enable RX interrupt
+	USART2->CR1 |= CR1_RXNEIE;
 	// Enable UE
 	USART2->CR1 |= CR1_UE;
 }
@@ -81,9 +92,14 @@ char read_uart(usart_port port)
 {
 	if (port == 0)
 	{
-	while(!(USART1->ISR & USART_ISR_RXNE)) {}
+	while(!(USART1->ISR & ISR_RXNE)) {}
 	return USART1->RDR;
 
+	}
+	else if (port == 1)
+	{
+		while(!(USART2->ISR & ISR_RXNE)) {}
+		return USART2->RDR;
 	}
 	else
 	{
@@ -96,8 +112,15 @@ void write_uart(char data, usart_port port)
 {
 	if (port == 0)
 	{
-	while(!(USART1->ISR & USART_ISR_TXE)) {}
+	while(!(USART1->ISR & ISR_TXE)) {}
 	USART1->TDR = data;
+
+	}
+
+	if (port == 1)
+	{
+	while(!(USART2->ISR & ISR_TXE)) {}
+	USART2->TDR = data;
 
 	}
 
@@ -112,3 +135,27 @@ void write_string_uart(const char *str, usart_port port)
 
 	}
 }
+
+
+void USART1_EXTI25_IRQHandler(void)
+{
+	if (((USART1->ISR & ISR_RXNE) !=0) && ((USART1->CR1 & CR1_RXNEIE) !=0))
+	{
+		unsigned char c;
+		c = USART1->RDR;
+		write_uart(c, bluetooth_port);
+	}
+
+}
+
+void USART2_EXTI26_IRQHandler(void)
+{
+	if (((USART2->ISR & ISR_RXNE) !=0) && ((USART2->CR1 & CR1_RXNEIE) !=0))
+	{
+		unsigned char c;
+		c = USART2->RDR;
+		write_uart(c, debug_port);
+	}
+	}
+
+
