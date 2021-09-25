@@ -1,5 +1,6 @@
 #include	<stdint.h>
 #include "stm32f3xx.h"
+#include "fifo.h"
 
 #define		EN_GPIOA		(1U<<17)
 #define		EN_GPIOC		(1U<<19)
@@ -161,7 +162,8 @@ void USART2_EXTI26_IRQHandler(void)
 		//Receive data
 		c = USART2->RDR;
 		// Echo data to debug port
-		write_uart(c, debug_port);
+		//write_uart(c, debug_port);
+		buffer_put(c);
 	}
 	}
 

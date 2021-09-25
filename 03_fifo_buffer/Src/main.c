@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include "stm32f3xx.h"
-#include "uart_drivers.h"
 #include "string.h"
+#include "uart_drivers.h"
+#include "fifo.h"
+
 
 #define		EN_GPIOE		(1U<<21)
 
@@ -19,7 +21,8 @@ int main(void)
 		//char data[80];
 		//sprintf(data, "Hello Brother\r\n");
 		//write_string_uart(data, bt_port);
-		//for (int i=0; i<500000; i++) {}
-
+		//for (int i=0; i<900000; i++) {}
+		unsigned char c = buffer_get();
+		write_uart(c, db_port);
 	}
 }
