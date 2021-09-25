@@ -14,11 +14,9 @@ typedef struct
 } fifo_buffer;
 
 void buffer_put(unsigned char c);
+void buffer_put_string(const char *str);
 unsigned char buffer_get(void);
-
-
-//void buffer_put(unsigned char c, fifo_buffer *mybuffer);
-//unsigned char buffer_get(fifo_buffer *mybuffer);
+int8_t is_response(char *str);
 
 
 #endif /* FIFO_H_ */

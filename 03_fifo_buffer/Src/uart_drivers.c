@@ -2,22 +2,26 @@
 #include "stm32f3xx.h"
 #include "fifo.h"
 
-#define		EN_GPIOA		(1U<<17)
-#define		EN_GPIOC		(1U<<19)
-#define		EN_USART1		(1U<<14)
-#define		EN_USART2		(1U<<17)
-#define		CR1_UE			(1U<<0)
-#define		CR1_RE			(1U<<2)
-#define		CR1_TE			(1U<<3)
-#define		CR1_RXNEIE		(1U<<5)
-#define		CR1_TXEIE		(1U<<7)
-#define		ISR_RXNE		(1U<<5)
-#define		ISR_TXE			(1U<<7)
-#define		SYS_FREQ		8000000
-#define		APB2_CLK		SYS_FREQ
-#define		APB1_CLK		SYS_FREQ
-#define		DB_BAUDRATE		9600
-#define		BT_BAUDRATE		9600
+#define		EN_GPIOA			(1U<<17)
+#define		EN_GPIOC			(1U<<19)
+#define		EN_USART1			(1U<<14)
+#define		EN_USART2			(1U<<17)
+#define		CR1_UE				(1U<<0)
+#define		CR1_RE				(1U<<2)
+#define		CR1_TE				(1U<<3)
+#define		CR1_RXNEIE			(1U<<5)
+#define		CR1_TXEIE			(1U<<7)
+#define		ISR_RXNE			(1U<<5)
+#define		ISR_TXE				(1U<<7)
+#define		SYS_FREQ			8000000
+#define		APB2_CLK			SYS_FREQ
+#define		APB1_CLK			SYS_FREQ
+#define		DB_BAUDRATE			9600
+#define		BT_BAUDRATE			9600
+#define		SYSTICK_LOAD_VAL	8000
+#define		CTRL_ENABLE			(1U<<0)
+#define		CTRL_CLKSRC			(1U<<2)
+#define		CTRL_COUNTERFLAG	(1U<<16)
 
 typedef		uint8_t			usart_port;
 
@@ -135,6 +139,23 @@ void write_string_uart(const char *str, usart_port port)
 	write_uart(*str++, port);
 
 	}
+}
+
+
+void systick_delay_ms(uint32_t delay)
+{
+	SysTick->LOAD = SYSTICK_LOAD_VAL;
+
+	SysTick->VAL = 0;
+
+	SysTick->CTRL = CTRL_CLKSRC | CTRL_ENABLE;
+
+	for (int i = 0; i < delay; i++)
+	{
+		while((SysTick->CTRL & CTRL_COUNTERFLAG) == 0){}
+	}
+
+	SysTick->CTRL = 0;
 }
 
 // Interrupt handler for USART1
