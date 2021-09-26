@@ -16,9 +16,13 @@ int main(void)
 	uart1_debug_init();
 	uart2_init();
 
-	//buffer_put_string("IsSm!!");
+	//unsigned char data[100];
 
-	for (int i=0; i<1500000; i++) {}
+	//buffer_put_string("ahaherea");
+
+	//copy_up_to_string("here", data);
+
+	//for (int i=0; i<1500000; i++) {}
 
 	while(1)
 	{
@@ -29,6 +33,7 @@ int main(void)
 		//unsigned char c = buffer_get();
 		//write_uart(c, db_port);
 		//result = is_response("Shahid");
+		/*
 		if (is_response("Shahid") ==1)
 		{
 			unsigned char data[80];
@@ -41,7 +46,19 @@ int main(void)
 			sprintf(data, "String not found...\r\n");
 			write_string_uart(data, db_port);
 		}
+		*/
+		char data[100] = {'\0'};
+		char data1[3];
 
-		systick_delay_ms(1000);
+
+
+		if (copy_up_to_string("here", data) == 1)
+		{
+			sprintf(data1, "\r\n");
+			strcat(data, data1);
+			write_string_uart(data, db_port);
+		}
+
+		systick_delay_ms(2000);
 	}
 }
